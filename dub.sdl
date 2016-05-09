@@ -1,0 +1,8 @@
+name "beatslice3"
+description "A minimal D application."
+copyright "Copyright © 2016, S.Percentage"
+authors "S.Percentage"
+stringImportPaths "imports"
+
+dependency "derelict-glfw3" version="*"
+dependency "objective-gl" version="*"
