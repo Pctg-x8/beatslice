@@ -9,10 +9,11 @@ layout(std140) uniform SceneCommon
 	vec4 pixelScale;
 	vec4 commonColor;
 };
+uniform vec2 pixelOffset;
 
 void main()
 {
 	color_frag = commonColor;
 	uv_frag = uv;
-	gl_Position = vec4(pos, 0.0f, 1.0f) * pixelScale * vec4(1.0f, -1.0f, 1.0f, 1.0f) - vec4(1.0f, -1.0f, 0.0f, 0.0f);
+	gl_Position = vec4(pos + pixelOffset, 0.0f, 1.0f) * pixelScale * vec4(1.0f, -1.0f, 1.0f, 1.0f) - vec4(1.0f, -1.0f, 0.0f, 0.0f);
 }

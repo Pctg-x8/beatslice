@@ -104,14 +104,6 @@ final class ScoreView_
 		}
 	}
 	
-	/*public void drawSeparator()
-	{
-		this.separator.drawInstanced!GL_LINES(1);
-	}
-	public void drawBackground()
-	{
-		this.background.drawInstanced!GL_TRIANGLES(1);
-	}*/
 	public void drawBarlines(int editor_height)
 	{
 		GLDevice.Vertices = ScoreView.barline;

@@ -16,6 +16,12 @@ struct TexturedVertex
 	@element("uv") float[2] uv;
 }
 
+struct SceneCommonUniforms
+{
+	float[4] pixelScale;
+	float[4] commonColor;
+}
+
 // Readonly Export
 private string Readonly(string name)
 {
@@ -35,6 +41,7 @@ final static class ShaderStock
 	mixin(Readonly("vertUnscaledColor"));
 	mixin(Readonly("barLines"));
 	mixin(Readonly("charRender"));
+	mixin(Readonly("inputBoxRender"));
 	
 	public static void init()
 	{
@@ -50,11 +57,16 @@ final static class ShaderStock
 		this.charRender = ShaderProgram.fromSources!(TexturedVertex,
 			ShaderType.Vertex, import("textured.glsl"),
 			ShaderType.Fragment, import("graytexture_colorize.glsl"));
+		this.inputBoxRender = ShaderProgram.fromSources!(SimpleVertex,
+			ShaderType.Vertex, import("inputBoxVS.glsl"),
+			ShaderType.Fragment, import("colorize.glsl"));
 		
 		// Block Binding
 		this.vertUnscaled.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
 		this.vertUnscaledColor.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
 		this.barLines.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
 		this.charRender.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
+		this.inputBoxRender.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
+		this.inputBoxRender.uniformBlocks.InstanceTranslationArray = UniformBindingPoints.InstanceTranslationArray;
 	}
 }

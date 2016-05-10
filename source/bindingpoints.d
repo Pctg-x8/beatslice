@@ -6,4 +6,5 @@ final class UniformBindingPoints
 	
 	// Binding Index Constants
 	public static immutable SceneCommon = 0;
+	public static immutable InstanceTranslationArray = 1;
 }
