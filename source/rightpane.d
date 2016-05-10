@@ -30,8 +30,8 @@ final class RightPane_
 	{
 		this.width = 150;
 		this.border_vertices = VertexArray.fromSlice([
-			SimpleVertex([-1.0f, 0.0f]), SimpleVertex([-1.0f, 18.0f]),
-			SimpleVertex([1.0f, 18.0f]), SimpleVertex([1.0f, 0.0f])
+			SimpleVertex([-1.0f, -1.0f]), SimpleVertex([-1.0f, 18.0f]),
+			SimpleVertex([1.0f, 18.0f]), SimpleVertex([1.0f, 0.0f]), SimpleVertex([-1.0f, 0.0f])
 		], ShaderStock.inputBoxRender);
 		this.fill_vertices = VertexArray.fromSlice([
 			SimpleVertex([-1.0f, 0.0f]), SimpleVertex([1.0f, 0.0f]), SimpleVertex([-1.0f, 18.0f]), SimpleVertex([1.0f, 18.0f])
@@ -65,7 +65,7 @@ final class RightPane_
 		this.fill_vertices.drawInstanced!GL_TRIANGLE_STRIP(2);
 		scu.commonColor = [InputBorderColor];
 		this.sceneCommonBuffer.update(scu);
-		this.border_vertices.drawInstanced!GL_LINE_LOOP(2);
+		this.border_vertices.drawInstanced!GL_LINE_STRIP(2);
 		
 		glViewport(x, y, width, height);
 	}

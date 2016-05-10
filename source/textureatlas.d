@@ -62,7 +62,7 @@ final class TextureAtlas_
 	
 	private auto allocate(uint w, uint h)
 	{
-		auto recursive(RegionNode current)
+		RegionNode recursive(RegionNode current)
 		{
 			if(current is null) return null;
 			if(!current.used)
