@@ -3,7 +3,8 @@
 		"derelict-gl3": "1.0.18",
 		"derelict-glfw3": "2.0.0",
 		"derelict-util": "2.0.6",
-		"objective-gl": "~master"
+		"objective-gl": "0.0.2",
+		"derelict-ft": "1.1.2"
 	},
 	"fileVersion": 1
 }

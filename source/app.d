@@ -1,5 +1,6 @@
 import derelict.glfw3.glfw3;
 import derelict.opengl3.gl3;
+import derelict.freetype.ft;
 import beatslice;
 import std.stdio;
 
@@ -7,6 +8,7 @@ void main()
 {
 	DerelictGL3.load();
 	DerelictGLFW3.load();
+	DerelictFT.load();
 	if(!glfwInit()) throw new Exception("GLFW initialization failed.");
 	scope(exit) glfwTerminate();
 	

@@ -6,3 +6,4 @@ stringImportPaths "imports"
 
 dependency "derelict-glfw3" version="*"
 dependency "objective-gl" version="*"
+dependency "derelict-ft" version="*"

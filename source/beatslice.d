@@ -36,6 +36,7 @@ final class Beatslice_
 	UniformBuffer!SceneCommonUniforms sceneCommonBuffer;
 	GLFWcursor* cursorArrow, cursorHorzResize;
 	PointingState pstate;
+	VertexArray a_vts;
 	
 	private auto initFrame()
 	{
@@ -73,9 +74,26 @@ final class Beatslice_
 		GLDevice.BindingPoint[UniformBindingPoints.SceneCommon] = this.sceneCommonBuffer;
 		ScoreView.init();
 		
+		TexturedVertex[] h_vts;
+		float left = 8.0f;
+		foreach(x; "Hello, world!".map!(x => TextureAtlas.addCharacter(x)))
+		{
+			h_vts ~= [
+				TexturedVertex([left + x.xBearing, x.yBearing], [x.u1, x.v1]),
+				TexturedVertex([left + x.xBearing, x.yBearing + x.height], [x.u1, x.v2]),
+				TexturedVertex([left + x.xBearing + x.width, x.yBearing + x.height], [x.u2, x.v2]),
+				TexturedVertex([left + x.xBearing + x.width, x.yBearing + x.height], [x.u2, x.v2]),
+				TexturedVertex([left + x.xBearing, x.yBearing], [x.u1, x.v1]),
+				TexturedVertex([left + x.xBearing + x.width, x.yBearing], [x.u2, x.v1])
+			];
+			left += x.horiAdvance;
+		}
+		this.a_vts = VertexArray.fromSlice(h_vts, ShaderStock.charRender);
+		
 		GLDevice.RasterizerState.Blending = true;
 		GLDevice.RasterizerState.BlendFunc = BlendFunctions.Alpha;
 		GLDevice.RasterizerState.ScissorTest = true;
+		GLDevice.RasterizerState.BackCulling = false;
 		while(!glfwWindowShouldClose(this.pWindow)) glfwWaitEvents();
 	}
 	
@@ -144,6 +162,7 @@ final class Beatslice_
 	{
 		static csu = SceneCommonUniforms([1.0f, 1.0f, 1.0f, 1.0f], [1.0f, 1.0f, 1.0f, 0.1875f]);
 		
+		csu.commonColor[3] = 0.1875f;
 		csu.pixelScale[1] = 2.0f / this.size[1];
 		
 		csu.pixelScale[0] = 2.0f / (this.size[0] - RightPane.width);
@@ -157,6 +176,13 @@ final class Beatslice_
 		glViewport(this.size[0] - RightPane.width, 0, RightPane.width, this.size[1]);
 		glScissor(this.size[0] - RightPane.width, 0, RightPane.width, this.size[1]);
 		RightPane.draw(this.size[1]);
+		
+		csu.commonColor[3] = 1.0f;
+		this.sceneCommonBuffer.update(csu);
+		ShaderStock.charRender.activate();
+		GLDevice.TextureUnits[0] = TextureAtlas.texture;
+		ShaderStock.charRender.uniforms.intex = 0;
+		this.a_vts.drawInstanced!GL_TRIANGLES(1);
 		
 		// GLDevice.TextureUnits[0] = TextureAtlas.texture;
 		

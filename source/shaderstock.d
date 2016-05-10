@@ -10,6 +10,11 @@ struct ColorVertex
 	@element("pos") float[2] pos;
 	@element("color_v") float[4] color;
 }
+struct TexturedVertex
+{
+	@element("pos") float[2] pos;
+	@element("uv") float[2] uv;
+}
 
 // Readonly Export
 private string Readonly(string name)
@@ -29,6 +34,7 @@ final static class ShaderStock
 	mixin(Readonly("vertUnscaled"));
 	mixin(Readonly("vertUnscaledColor"));
 	mixin(Readonly("barLines"));
+	mixin(Readonly("charRender"));
 	
 	public static void init()
 	{
@@ -41,10 +47,14 @@ final static class ShaderStock
 		this.barLines = ShaderProgram.fromSources!(SimpleVertex,
 			ShaderType.Vertex, import("barLines.glsl"),
 			ShaderType.Fragment, import("colorize.glsl"));
+		this.charRender = ShaderProgram.fromSources!(TexturedVertex,
+			ShaderType.Vertex, import("textured.glsl"),
+			ShaderType.Fragment, import("graytexture_colorize.glsl"));
 		
 		// Block Binding
 		this.vertUnscaled.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
 		this.vertUnscaledColor.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
 		this.barLines.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
+		this.charRender.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
 	}
 }
