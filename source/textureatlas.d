@@ -98,7 +98,7 @@ final class TextureAtlas_
 		// writeln("Rendering character ", chr, "...");
 		auto glyph = this.face.getRenderedCharacter(chr);
 		// writeln("Face Baseline: ", this.face.baseline, "/Glyph Offsets: (", glyph.bitmap_left, ", ", glyph.bitmap_top, ")");
-		writeln("bitmap width: ", glyph.bitmap.width, "/rows: ", glyph.bitmap.rows);
+		// writeln("bitmap width: ", glyph.bitmap.width, "/rows: ", glyph.bitmap.rows);
 		// writeln("linear advances: (", glyph.linearHoriAdvance / 65536.0f, ", ", glyph.linearVertAdvance / 65536.0f, ")");
 		auto rect = this.allocate(glyph.bitmap.width + 1, glyph.bitmap.rows + 1);
 		if(rect is null) throw new Exception("Unable locate character in texture atlas.");
@@ -108,10 +108,10 @@ final class TextureAtlas_
 			glyph.bitmap.width, glyph.bitmap.rows,
 			glyph.linearHoriAdvance / 65536.0f, glyph.linearVertAdvance / 65536.0f,
 			glyph.bitmap_left, this.face.baseline - glyph.bitmap_top);
-		if(glyph.bitmap.rows >= 1)
+		/*if(glyph.bitmap.rows >= 1)
 		{
 			writeln(glyph.bitmap.buffer[0 .. (glyph.bitmap.pitch * glyph.bitmap.rows)].map!(x => format("%02x", x)).chunks(glyph.bitmap.pitch).map!(x => x.join(" ")).join("\n"));
-		}
+		}*/
 		GLDevice.PixelStore[GL_UNPACK_ALIGNMENT] = 1;
 		// GLDevice.PixelStore[GL_UNPACK_ROW_LENGTH] = glyph.bitmap.pitch;
 		this.texture.update(rect.x, rect.y, glyph.bitmap.width, glyph.bitmap.rows, glyph.bitmap.buffer, PixelFormat.Grayscale);
