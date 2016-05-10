@@ -74,21 +74,24 @@ final class Beatslice_
 		GLDevice.BindingPoint[UniformBindingPoints.SceneCommon] = this.sceneCommonBuffer;
 		ScoreView.init();
 		
-		TexturedVertex[] h_vts;
-		float left = 8.0f;
-		foreach(x; "Hello, world!".map!(x => TextureAtlas.addCharacter(x)))
+		auto makeStringVertices(string text, float left, float top)
 		{
-			h_vts ~= [
-				TexturedVertex([left + x.xBearing, x.yBearing], [x.u1, x.v1]),
-				TexturedVertex([left + x.xBearing, x.yBearing + x.height], [x.u1, x.v2]),
-				TexturedVertex([left + x.xBearing + x.width, x.yBearing + x.height], [x.u2, x.v2]),
-				TexturedVertex([left + x.xBearing + x.width, x.yBearing + x.height], [x.u2, x.v2]),
-				TexturedVertex([left + x.xBearing, x.yBearing], [x.u1, x.v1]),
-				TexturedVertex([left + x.xBearing + x.width, x.yBearing], [x.u2, x.v1])
-			];
-			left += x.horiAdvance;
+			TexturedVertex[] vts;
+			foreach(x; text.map!(x => TextureAtlas.addCharacter(x)))
+			{
+				vts ~= [
+					TexturedVertex([left + x.xBearing,				top + x.yBearing], [x.u1, x.v1]),
+					TexturedVertex([left + x.xBearing,				top + x.yBearing + x.height], [x.u1, x.v2]),
+					TexturedVertex([left + x.xBearing + x.width,	top + x.yBearing + x.height], [x.u2, x.v2]),
+					TexturedVertex([left + x.xBearing + x.width,	top + x.yBearing + x.height], [x.u2, x.v2]),
+					TexturedVertex([left + x.xBearing,				top + x.yBearing], [x.u1, x.v1]),
+					TexturedVertex([left + x.xBearing + x.width,	top + x.yBearing], [x.u2, x.v1])
+				];
+				left += x.horiAdvance;
+			}
+			return vts;
 		}
-		this.a_vts = VertexArray.fromSlice(h_vts, ShaderStock.charRender);
+		this.a_vts = VertexArray.fromSlice(makeStringVertices("Chart Info", 8, 8), ShaderStock.charRender);
 		
 		GLDevice.RasterizerState.Blending = true;
 		GLDevice.RasterizerState.BlendFunc = BlendFunctions.Alpha;
@@ -183,8 +186,6 @@ final class Beatslice_
 		GLDevice.TextureUnits[0] = TextureAtlas.texture;
 		ShaderStock.charRender.uniforms.intex = 0;
 		this.a_vts.drawInstanced!GL_TRIANGLES(1);
-		
-		// GLDevice.TextureUnits[0] = TextureAtlas.texture;
 		
 		glfwSwapBuffers(pWindow);
 	}

@@ -60,6 +60,6 @@ final class Face
 	/// Gets face's baseline in pixel
 	public @property baseline()
 	{
-		return (this.face.height + this.face.descender) * this.face.size.metrics.y_ppem / this.face.units_per_EM;
+		return this.face.ascender * this.face.size.metrics.y_ppem / this.face.units_per_EM;
 	}
 }
