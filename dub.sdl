@@ -5,5 +5,5 @@ authors "S.Percentage"
 stringImportPaths "imports"
 
 dependency "derelict-glfw3" version="*"
-dependency "objective-gl" version="*"
+dependency "objective-gl" path="packages/objective-gl-dev"
 dependency "derelict-ft" version="*"
