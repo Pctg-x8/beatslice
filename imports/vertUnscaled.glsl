@@ -2,9 +2,12 @@
 
 in vec2 pos;
 out vec4 color;
-layout(std140) uniform SceneCommon
+layout(std140) uniform Viewport
 {
 	vec4 pixelScale;
+};
+layout(std140) uniform ColorData
+{
 	vec4 commonColor;
 };
 

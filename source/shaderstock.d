@@ -42,6 +42,7 @@ final static class ShaderStock
 	mixin(Readonly("barLines"));
 	mixin(Readonly("charRender"));
 	mixin(Readonly("inputBoxRender"));
+	mixin(Readonly("placeholderRender"));
 	
 	public static void init()
 	{
@@ -60,13 +61,23 @@ final static class ShaderStock
 		this.inputBoxRender = ShaderProgram.fromSources!(SimpleVertex,
 			ShaderType.Vertex, import("inputBoxVS.glsl"),
 			ShaderType.Fragment, import("colorize.glsl"));
+		this.placeholderRender = ShaderProgram.fromSources!(TexturedVertex,
+			ShaderType.Vertex, import("placeholderVS.glsl"),
+			ShaderType.Fragment, import("graytexture_colorize.glsl"));
 		
 		// Block Binding
-		this.vertUnscaled.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
-		this.vertUnscaledColor.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
-		this.barLines.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
-		this.charRender.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
-		this.inputBoxRender.uniformBlocks.SceneCommon = UniformBindingPoints.SceneCommon;
+		this.vertUnscaled.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
+		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
+		this.vertUnscaledColor.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
+		this.barLines.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
+		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
+		this.charRender.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
+		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
+		this.inputBoxRender.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
+		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
 		this.inputBoxRender.uniformBlocks.InstanceTranslationArray = UniformBindingPoints.InstanceTranslationArray;
+		this.placeholderRender.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
+		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
+		this.placeholderRender.uniformBlocks.InstanceTranslationArray = UniformBindingPoints.InstanceTranslationArray;
 	}
 }

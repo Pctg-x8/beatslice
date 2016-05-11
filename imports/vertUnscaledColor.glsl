@@ -3,10 +3,9 @@
 in vec2 pos;
 in vec4 color_v;
 out vec4 color;
-layout(std140) uniform SceneCommon
+layout(std140) uniform Viewport
 {
 	vec4 pixelScale;
-	vec4 commonColor;	// unused
 };
 
 void main()

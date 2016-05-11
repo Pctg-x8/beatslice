@@ -1,5 +1,5 @@
 import derelict.glfw3.glfw3;
-import objectivegl, textrender;
+import objectivegl, textrender, renderhelper;
 import shaderstock, bindingpoints, textureatlas, scoreview, rightpane;
 import std.typecons;
 import std.math, std.algorithm;
@@ -30,8 +30,6 @@ final class Beatslice_
 	private UniformBuffer!SceneCommonUniforms sceneCommonBuffer;
 	private GLFWcursor* cursorArrow, cursorHorzResize, cursorTextRange;
 	private PointingState pstate;
-	
-	private StringVertices chartinfo_v, title_v, artist_v;
 	
 	private auto initFrame()
 	{
@@ -65,14 +63,11 @@ final class Beatslice_
 		this.initFrame().registerCallbacks();
 		ShaderStock.init();
 		TextureAtlas.init();
+		RenderHelper.init();
 		
 		this.sceneCommonBuffer = UniformBuffer!SceneCommonUniforms.newStatic();
 		ScoreView.init();
 		RightPane.init();
-		
-		this.chartinfo_v = makeStringVertices("Chart Info", 0, 8);
-		this.title_v = makeStringVerticesInv("Title: ", 0, 40);
-		this.artist_v = makeStringVerticesInv("Artist: ", 0, 64);
 		
 		GLDevice.RasterizerState.Blending = true;
 		GLDevice.RasterizerState.BlendFunc = BlendFunctions.Alpha;
@@ -155,32 +150,15 @@ final class Beatslice_
 		static csu = SceneCommonUniforms([1.0f, 1.0f, 1.0f, 1.0f], [1.0f, 1.0f, 1.0f, 0.1875f]);
 		
 		csu.commonColor = [1.0f, 1.0f, 1.0f, 0.1875f];
-		csu.pixelScale[1] = 2.0f / this.size[1];
-		
-		csu.pixelScale[0] = 2.0f / (this.size[0] - RightPane.width);
 		this.sceneCommonBuffer.update(csu);
 		GLDevice.BindingPoint[UniformBindingPoints.SceneCommon] = this.sceneCommonBuffer;
-		glViewport(0, 0, this.size[0] - RightPane.width, this.size[1]);
-		glScissor(0, 0, this.size[0] - RightPane.width, this.size[1]);
+		RenderHelper.viewport = [0.0f, 0.0f, this.size[0] - RightPane.width, this.size[1]];
 		ScoreView.draw(this.size[0] - RightPane.width, this.size[1]);
 		
 		csu.pixelScale[0] = 2.0f / RightPane.width;
 		this.sceneCommonBuffer.update(csu);
-		glViewport(this.size[0] - RightPane.width, 0, RightPane.width, this.size[1]);
-		glScissor(this.size[0] - RightPane.width, 0, RightPane.width, this.size[1]);
+		RenderHelper.viewport = [this.size[0] - RightPane.width, 0.0f, RightPane.width, this.size[1]];
 		RightPane.draw(this.size[0] - RightPane.width, 0, RightPane.width, this.size[1]);
-		
-		csu.commonColor[3] = 1.0f;
-		this.sceneCommonBuffer.update(csu);
-		GLDevice.BindingPoint[UniformBindingPoints.SceneCommon] = this.sceneCommonBuffer;
-		ShaderStock.charRender.activate();
-		GLDevice.TextureUnits[0] = TextureAtlas.texture;
-		ShaderStock.charRender.uniforms.intex = 0;
-		ShaderStock.charRender.uniforms.pixelOffset = [(RightPane.width - this.chartinfo_v.width) / 2.0f, 0.0f];
-		this.chartinfo_v.vbuf.drawInstanced!GL_TRIANGLES(1);
-		ShaderStock.charRender.uniforms.pixelOffset = [56.0f, 0.0f];
-		this.title_v.vbuf.drawInstanced!GL_TRIANGLES(1);
-		this.artist_v.vbuf.drawInstanced!GL_TRIANGLES(1);
 		
 		glfwSwapBuffers(pWindow);
 	}
