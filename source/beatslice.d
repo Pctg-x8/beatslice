@@ -25,13 +25,13 @@ final class Beatslice_
 		PaneResizing
 	}
 	
-	GLFWwindow* pWindow;
-	Tuple!(int, int) size;
-	UniformBuffer!SceneCommonUniforms sceneCommonBuffer;
-	GLFWcursor* cursorArrow, cursorHorzResize;
-	PointingState pstate;
+	private GLFWwindow* pWindow;
+	private Tuple!(int, int) size;
+	private UniformBuffer!SceneCommonUniforms sceneCommonBuffer;
+	private GLFWcursor* cursorArrow, cursorHorzResize, cursorTextRange;
+	private PointingState pstate;
 	
-	StringVertices chartinfo_v, title_v, artist_v;
+	private StringVertices chartinfo_v, title_v, artist_v;
 	
 	private auto initFrame()
 	{
@@ -47,6 +47,7 @@ final class Beatslice_
 		
 		this.cursorArrow = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
 		this.cursorHorzResize = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
+		this.cursorTextRange = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
 		this.pstate = PointingState.Free;
 		
 		return this;
@@ -101,7 +102,14 @@ final class Beatslice_
 			}
 			else
 			{
-				this.pWindow.glfwSetCursor(this.cursorArrow);
+				if(RightPane.inCursorTextRange(x - (this.size[0] - RightPane.width), y))
+				{
+					this.pWindow.glfwSetCursor(this.cursorTextRange);
+				}
+				else
+				{
+					this.pWindow.glfwSetCursor(this.cursorArrow);
+				}
 				this.pstate = PointingState.Free;
 			}
 		}

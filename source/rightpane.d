@@ -11,20 +11,22 @@ final class RightPane_
 		return initOnce!o(new RightPane_);
 	}
 	
-	struct InstanceTranslationArrayUniforms
+	struct InstanceTranslationArrayData
 	{
-		float[4][2] offsets;
+		ShaderVec4[2] offsets;
 	}
 	
 	// Color constants
 	alias BackgroundColor = HexColor!0xff303030;
 	alias InputBorderColor = HexColor!0xff4080c0;
 	alias InputFillColor = HexColor!0x20000000;
+	alias TextColor = HexColor!0xffffffff;
 	
 	public uint width;
 	private VertexArray border_vertices, fill_vertices;
 	private UniformBuffer!SceneCommonUniforms sceneCommonBuffer;
-	private UniformBuffer!InstanceTranslationArrayUniforms instanceTranslationBuffer;
+	private UniformBuffer!InstanceTranslationArrayData instanceTranslationBuffer;
+	private InstanceTranslationArrayData inputBoxPositions;
 	
 	public void init()
 	{
@@ -38,11 +40,10 @@ final class RightPane_
 		], ShaderStock.inputBoxRender);
 		
 		this.sceneCommonBuffer = UniformBuffer!SceneCommonUniforms.newStatic();
-		this.instanceTranslationBuffer = UniformBuffer!InstanceTranslationArrayUniforms.newStatic();
-		InstanceTranslationArrayUniforms itau;
-		itau.offsets[0] = [0.0f, 40.0f, 0.0f, 0.0f];
-		itau.offsets[1] = [0.0f, 64.0f, 0.0f, 0.0f];
-		this.instanceTranslationBuffer.update(itau);
+		this.instanceTranslationBuffer = UniformBuffer!InstanceTranslationArrayData.newStatic();
+		this.inputBoxPositions.offsets[0] = [0.0f, 40.0f, 0.0f, 0.0f];
+		this.inputBoxPositions.offsets[1] = [0.0f, 64.0f, 0.0f, 0.0f];
+		this.instanceTranslationBuffer.update(this.inputBoxPositions);
 		
 		GLDevice.BindingPoint[UniformBindingPoints.InstanceTranslationArray] = this.instanceTranslationBuffer;
 	}
@@ -68,6 +69,22 @@ final class RightPane_
 		this.border_vertices.drawInstanced!GL_LINE_STRIP(2);
 		
 		glViewport(x, y, width, height);
+	}
+	
+	public bool inCursorTextRange(double x, double y)
+	{
+		if(y < 0) return false;
+		
+		pure vertInRange(double a, double b) { return a <= y && y <= b; }
+		pure vertInInputBox(size_t idx) { return vertInRange(this.inputBoxPositions.offsets[idx][1], this.inputBoxPositions.offsets[idx][1] + 18.0); }
+		if(vertInInputBox(0) || vertInInputBox(1))
+		{
+			if(60 <= x && x <= width - 8)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 }
 alias RightPane = RightPane_.instance;
