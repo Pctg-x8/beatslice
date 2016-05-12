@@ -20,7 +20,7 @@ final class RightPane_
 	// Color constants
 	alias BackgroundColor = HexColor!0xff303030;
 	alias InputBorderColor = HexColor!0xff4080c0;
-	alias InputFillColor = HexColor!0x20000000;
+	alias InputFillColor = HexColor!0x40000000;
 	alias TextColor = HexColor!0xffffffff;
 	alias PlaceholderTextColor = HexColor!0x60ffffff;
 	

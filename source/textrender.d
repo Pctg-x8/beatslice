@@ -22,7 +22,7 @@ struct StringVertices
 	VertexArray vbuf;
 	float width;
 	
-	void drawInstanced(size_t instanceCount)
+	void drawInstanced(int instanceCount)
 	{
 		this.vbuf.drawInstanced!GL_TRIANGLES(instanceCount);
 	}
