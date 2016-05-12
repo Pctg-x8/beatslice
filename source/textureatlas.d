@@ -57,7 +57,7 @@ final class TextureAtlas_
 		this.regionRoot = new RegionNode(0, 0, TextureSize, TextureSize);
 		
 		this.face = new Face("resources/fonts/mplus-2c-regular.ttf");
-		this.face.charSize = 10.0f;
+		this.face.charSize = 9.0f;
 	}
 	
 	private auto allocate(uint w, uint h)

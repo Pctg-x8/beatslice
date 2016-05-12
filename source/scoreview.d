@@ -1,6 +1,7 @@
 import objectivegl;
 import shaderstock;
 import std.range, std.algorithm, std.typecons;
+import bindingpoints;
 
 struct Windows(Source) if(isForwardRange!Source)
 {
@@ -56,6 +57,9 @@ final class ScoreView_
 	
 	// Color Constants
 	alias BackgroundColor = HexColor!0xff202020;
+	alias LineColor = HexColor!0x30ffffff;
+	
+	private UniformBuffer!UniformColorData cdLine;
 	
 	private VertexArray separator, background, barline;
 	private float laneWidths_;
@@ -90,11 +94,13 @@ final class ScoreView_
 		this.separator = VertexArray.fromSlice(vertices[0], ShaderStock.vertUnscaled);
 		this.background = VertexArray.fromSlice(vertices[1], ShaderStock.vertUnscaledColor);
 		this.barline = VertexArray.fromSlice([SimpleVertex([-1.0f, 0.0f]), SimpleVertex([1.0f, 0.0f])], ShaderStock.barLines);
+		this.cdLine = UniformBufferFactory.newStatic(UniformColorData([LineColor]));
 	}
 	
-	public void draw(int width, int height)
+	public void draw(int height)
 	{
 		glClearColor(BackgroundColor); glClear(GL_COLOR_BUFFER_BIT);
+		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.cdLine;
 		ShaderStock.vertUnscaledColor.activate(); this.background.drawInstanced!GL_TRIANGLES(1);
 		ShaderStock.vertUnscaled.activate(); this.separator.drawInstanced!GL_LINES(1);
 		if(height > TRACK_HDR_SIZE)

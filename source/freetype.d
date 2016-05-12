@@ -49,7 +49,7 @@ final class Face
 	/// Set character size(point)
 	public @property charSize(float height)
 	{
-		this.face.FT_Set_Char_Size(0, cast(FT_F26Dot6)(height * 64.0f), 96, 96);
+		this.face.FT_Set_Char_Size(0, cast(FT_F26Dot6)(height * 64.0f), 100, 100);
 	}
 	/// Gets glyph by character code that rendered
 	public auto getRenderedCharacter(dchar c)

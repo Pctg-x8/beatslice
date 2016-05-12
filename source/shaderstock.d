@@ -16,9 +16,8 @@ struct TexturedVertex
 	@element("uv") float[2] uv;
 }
 
-struct SceneCommonUniforms
+struct UniformColorData
 {
-	float[4] pixelScale;
 	float[4] commonColor;
 }
 
@@ -43,6 +42,7 @@ final static class ShaderStock
 	mixin(Readonly("charRender"));
 	mixin(Readonly("inputBoxRender"));
 	mixin(Readonly("placeholderRender"));
+	mixin(Readonly("rawVertices"));
 	
 	public static void init()
 	{
@@ -64,20 +64,21 @@ final static class ShaderStock
 		this.placeholderRender = ShaderProgram.fromSources!(TexturedVertex,
 			ShaderType.Vertex, import("placeholderVS.glsl"),
 			ShaderType.Fragment, import("graytexture_colorize.glsl"));
+		this.rawVertices = ShaderProgram.fromSources!(SimpleVertex,
+			ShaderType.Vertex, import("rawVertices.glsl"),
+			ShaderType.Fragment, import("colorize.glsl"));
 		
 		// Block Binding
-		this.vertUnscaled.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
-		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
+		foreach(x; [this.vertUnscaled, this.barLines, this.charRender, this.inputBoxRender, this.placeholderRender])
+		{
+			x.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
+			x.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
+		}
 		this.vertUnscaledColor.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
-		this.barLines.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
-		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
-		this.charRender.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
-		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
-		this.inputBoxRender.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
-		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
-		this.inputBoxRender.uniformBlocks.InstanceTranslationArray = UniformBindingPoints.InstanceTranslationArray;
-		this.placeholderRender.uniformBlocks.Viewport = UniformBindingPoints.Viewport;
-		this.vertUnscaled.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
-		this.placeholderRender.uniformBlocks.InstanceTranslationArray = UniformBindingPoints.InstanceTranslationArray;
+		foreach(x; [this.inputBoxRender, this.placeholderRender])
+		{
+			x.uniformBlocks.InstanceTranslationArray = UniformBindingPoints.InstanceTranslationArray;
+		}
+		this.rawVertices.uniformBlocks.ColorData = UniformBindingPoints.ColorData;
 	}
 }

@@ -1,6 +1,6 @@
 import objectivegl;
 import shaderstock, bindingpoints;
-import textrender;
+import textrender, renderhelper;
 
 final class RightPane_
 {
@@ -26,11 +26,18 @@ final class RightPane_
 	
 	public uint width;
 	private VertexArray border_vertices, fill_vertices;
-	private UniformBuffer!SceneCommonUniforms sceneCommonBuffer;
 	private UniformBuffer!InstanceTranslationArrayData instanceTranslationBuffer;
 	private InstanceTranslationArrayData inputBoxPositions;
-	private StringVertices chartInfoHeader;
-	private VertexArray chartInfoLabels_v;
+	private RenderHelper.Viewport vpPane;
+	private UniformBuffer!UniformColorData cdText;
+	private StringVertices materialHeader;
+	private struct ListBoxData
+	{
+		UniformBuffer!UniformColorData borderColor, fillColor;
+		VertexArray borderVertices, fillVertices;
+		RenderHelper.Viewport vport;
+	}
+	private ListBoxData listbox;
 	
 	public void init()
 	{
@@ -43,66 +50,55 @@ final class RightPane_
 			SimpleVertex([-1.0f, 0.0f]), SimpleVertex([1.0f, 0.0f]), SimpleVertex([-1.0f, 20.0f]), SimpleVertex([1.0f, 20.0f])
 		], ShaderStock.inputBoxRender);
 		
-		this.sceneCommonBuffer = UniformBuffer!SceneCommonUniforms.newStatic();
 		this.instanceTranslationBuffer = UniformBuffer!InstanceTranslationArrayData.newStatic();
 		this.inputBoxPositions.offsets[0] = [0.0f, 40.0f, 0.0f, 0.0f];
 		this.inputBoxPositions.offsets[1] = [0.0f, 64.0f, 0.0f, 0.0f];
 		this.instanceTranslationBuffer.update(this.inputBoxPositions);
 		
-		this.chartInfoHeader = makeStringVertices("Chart Info", 0.0f, 8.0f);
-		this.chartInfoLabels_v = VertexArray.fromSlice(makeStringVerticesInvRaw("Title: ", 56.0f, 40.0f)[0]
-			~ makeStringVerticesInvRaw("Artist: ", 56.0f, 64.0f)[0], ShaderStock.charRender);
+		this.vpPane = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
+		this.listbox.vport = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
+		this.cdText = UniformBufferFactory.newStatic(UniformColorData([TextColor]));
+		this.materialHeader = StringVertices.make("Materials: ", 8, 4);
+		this.listbox.borderVertices = VertexArray.fromSlice([
+			SimpleVertex([-1.0f, -1.0f]), SimpleVertex([-1.0f, 1.0f]), SimpleVertex([1.0f, 1.0f]), SimpleVertex([1.0f, -1.0f]),
+			SimpleVertex([-1.0f, -1.0f])
+		], ShaderStock.rawVertices);
+		this.listbox.fillVertices = VertexArray.fromSlice([
+			SimpleVertex([-1.0f, -1.0f]), SimpleVertex([-1.0f, 1.0f]), SimpleVertex([1.0f, -1.0f]), SimpleVertex([1.0f, 1.0f])
+		], ShaderStock.rawVertices);
+		this.listbox.borderColor = UniformBufferFactory.newStatic(UniformColorData([InputBorderColor]));
+		this.listbox.fillColor = UniformBufferFactory.newStatic(UniformColorData([InputFillColor]));
 		
 		GLDevice.BindingPoint[UniformBindingPoints.InstanceTranslationArray] = this.instanceTranslationBuffer;
 	}
 	
-	public void draw(int x, int y, int width, int height)
+	public void onResize(float x, float y, float w, float h)
 	{
-		static scu = SceneCommonUniforms([1.0f, 1.0f, 1.0f, 1.0f], [1.0f, 1.0f, 1.0f, 1.0f]);
-		
+		this.vpPane.relocate(x, y, w, h);
+		this.listbox.vport.relocate(x + 8.0f, y + 8.0f, w - 16.0f, h - 32.0f);
+	}
+	
+	public void draw()
+	{
+		RenderHelper.Viewport.current = this.vpPane;
 		glClearColor(BackgroundColor);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
-		scu.pixelScale[0] = 2.0f / (width - 68);
-		scu.pixelScale[1] = 2.0f / height;
-		GLDevice.BindingPoint[UniformBindingPoints.SceneCommon] = this.sceneCommonBuffer;
-		
-		glViewport(x + 60, y, width - 68, height);
-		glScissor(x + 60, y, width - 68, height);
-		ShaderStock.inputBoxRender.activate();
-		scu.commonColor = [InputFillColor];
-		this.sceneCommonBuffer.update(scu);
-		this.fill_vertices.drawInstanced!GL_TRIANGLE_STRIP(2);
-		scu.commonColor = [InputBorderColor];
-		this.sceneCommonBuffer.update(scu);
-		this.border_vertices.drawInstanced!GL_LINE_STRIP(2);
-		
-		glViewport(x, y, width, height);
-		glScissor(x, y, width, height);
-		
 		ShaderStock.charRender.activate();
-		scu.commonColor = [TextColor];
-		scu.pixelScale[0 .. 1] = 2.0f / [width, height];
-		this.sceneCommonBuffer.update(scu);
-		ShaderStock.charRender.uniforms.pixelOffset = [(width - this.chartInfoHeader.width) / 2.0f, 0.0f];
-		this.chartInfoHeader.drawInstanced(1);
+		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.cdText;
 		ShaderStock.charRender.uniforms.pixelOffset = [0.0f, 0.0f];
-		this.chartInfoLabels_v.drawInstanced!GL_TRIANGLES(1);
+		this.materialHeader.drawInstanced(1);
+		
+		RenderHelper.Viewport.current = this.listbox.vport;
+		ShaderStock.rawVertices.activate();
+		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.listbox.fillColor;
+		this.listbox.fillVertices.drawInstanced!GL_TRIANGLE_STRIP(1);
+		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.listbox.borderColor;
+		this.listbox.borderVertices.drawInstanced!GL_LINE_STRIP(1);
 	}
 	
 	public bool inCursorTextRange(double x, double y)
 	{
-		if(y < 0) return false;
-		
-		pure vertInRange(double a, double b) { return a <= y && y <= b; }
-		pure vertInInputBox(size_t idx) { return vertInRange(this.inputBoxPositions.offsets[idx][1], this.inputBoxPositions.offsets[idx][1] + 20.0); }
-		if(vertInInputBox(0) || vertInInputBox(1))
-		{
-			if(60 <= x && x <= width - 8)
-			{
-				return true;
-			}
-		}
 		return false;
 	}
 }

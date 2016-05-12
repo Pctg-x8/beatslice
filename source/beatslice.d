@@ -27,9 +27,9 @@ final class Beatslice_
 	
 	private GLFWwindow* pWindow;
 	private Tuple!(int, int) size;
-	private UniformBuffer!SceneCommonUniforms sceneCommonBuffer;
 	private GLFWcursor* cursorArrow, cursorHorzResize, cursorTextRange;
 	private PointingState pstate;
+	private RenderHelper.Viewport vpEntire;
 	
 	private auto initFrame()
 	{
@@ -63,12 +63,13 @@ final class Beatslice_
 		this.initFrame().registerCallbacks();
 		ShaderStock.init();
 		TextureAtlas.init();
-		RenderHelper.init();
 		
-		this.sceneCommonBuffer = UniformBuffer!SceneCommonUniforms.newStatic();
 		ScoreView.init();
 		RightPane.init();
 		
+		this.vpEntire = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
+		
+		this.onResizeFrame(this.size.expand);
 		GLDevice.RasterizerState.Blending = true;
 		GLDevice.RasterizerState.BlendFunc = BlendFunctions.Alpha;
 		GLDevice.RasterizerState.ScissorTest = true;
@@ -84,7 +85,24 @@ final class Beatslice_
 	private void onResizeFrame(int w, int h)
 	{
 		this.size = tuple(w, h);
+		this.vpEntire.relocate(0.0f, 0.0f, w, h);
+		RightPane.onResize(w - RightPane.width, 0.0f, RightPane.width, h);
 	}
+	// Render loop
+	private void onRender()
+	{
+		// static csu = SceneCommonUniforms([1.0f, 1.0f, 1.0f, 1.0f], [1.0f, 1.0f, 1.0f, 0.1875f]);
+		
+		RenderHelper.Viewport.current = this.vpEntire;
+		// csu.commonColor = [1.0f, 1.0f, 1.0f, 0.1875f];
+		// this.sceneCommonBuffer.update(csu);
+		ScoreView.draw(this.size[1]);
+		
+		RightPane.draw();
+		
+		glfwSwapBuffers(pWindow);
+	}
+	
 	private void onCursorMove(double x, double y)
 	{
 		void updateCursor()
@@ -112,6 +130,7 @@ final class Beatslice_
 		{
 			this.pWindow.glfwSetCursor(this.cursorHorzResize);
 			RightPane.width = cast(int)max(this.size[0] - max(x, 96.0f), 96.0f);
+			RightPane.onResize(this.size[0] - RightPane.width, 0.0f, RightPane.width, this.size[1]);
 			this.onRender();
 		}
 		
@@ -143,24 +162,6 @@ final class Beatslice_
 				this.pstate = PointingState.ReadyForPaneResize;
 			}
 		}
-	}
-	// Render loop
-	private void onRender()
-	{
-		static csu = SceneCommonUniforms([1.0f, 1.0f, 1.0f, 1.0f], [1.0f, 1.0f, 1.0f, 0.1875f]);
-		
-		csu.commonColor = [1.0f, 1.0f, 1.0f, 0.1875f];
-		this.sceneCommonBuffer.update(csu);
-		GLDevice.BindingPoint[UniformBindingPoints.SceneCommon] = this.sceneCommonBuffer;
-		RenderHelper.viewport = [0.0f, 0.0f, this.size[0] - RightPane.width, this.size[1]];
-		ScoreView.draw(this.size[0] - RightPane.width, this.size[1]);
-		
-		csu.pixelScale[0] = 2.0f / RightPane.width;
-		this.sceneCommonBuffer.update(csu);
-		RenderHelper.viewport = [this.size[0] - RightPane.width, 0.0f, RightPane.width, this.size[1]];
-		RightPane.draw(this.size[0] - RightPane.width, 0, RightPane.width, this.size[1]);
-		
-		glfwSwapBuffers(pWindow);
 	}
 }
 alias Beatslice = Beatslice_.instance;

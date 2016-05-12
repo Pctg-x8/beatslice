@@ -1,42 +1,42 @@
 import objectivegl;
 import bindingpoints;
+import std.typecons;
 
-final class RenderHelper_
+final static class RenderHelper
 {
-	private this() {}
-	public static @property instance()
-	{
-		import std.concurrency;
-		__gshared RenderHelper_ o;
-		return initOnce!o(new RenderHelper_);
-	}
+	@disable this();
 	
-	struct ViewportData
+	static class Viewport
 	{
-		ShaderVec4 pixelScale;
-	}
-	
-	private ShaderVec4 viewportSize;
-	private UniformBuffer!ViewportData vpDataBuffer;
-	private ViewportData vpData;
-	
-	public void init()
-	{
-		this.vpDataBuffer = UniformBuffer!ViewportData.newStatic();
-		this.vpData.pixelScale = [1.0f, 1.0f, 1.0f, 1.0f];
-		this.vpDataBuffer.update(this.vpData);
+		struct UniformBufferData
+		{
+			ShaderVec4 pixelScale;
+		}
 		
-		GLDevice.BindingPoint[UniformBindingPoints.SceneCommon] = this.vpDataBuffer;
-	}
-	
-	public @property viewport(ShaderVec4 sizev4)
-	{
-		this.viewportSize = sizev4;
-		glViewport(cast(int)sizev4[0], cast(int)sizev4[1], cast(int)sizev4[2], cast(int)sizev4[3]);
-		glScissor(cast(int)sizev4[0], cast(int)sizev4[1], cast(int)sizev4[2], cast(int)sizev4[3]);
+		private Tuple!(int, int, int, int) params_i;
+		private Tuple!(float, float, float, float) params;
+		private UniformBuffer!UniformBufferData uniformDataBuffer;
+		public @property parameters() const { return this.params; }
 		
-		this.vpData.pixelScale[0 .. 1] = 2.0f / sizev4[2 .. 3];
-		this.vpDataBuffer.update(this.vpData);
+		public this(float x, float y, float w, float h)
+		{
+			this.params = tuple(x, y, w, h);
+			this.params_i = tuple(cast(int)x, cast(int)y, cast(int)w, cast(int)h);
+			this.uniformDataBuffer = UniformBuffer!UniformBufferData.newStatic(UniformBufferData(
+				[2.0f / this.params[0], 2.0f / this.params[1], 1.0f, 1.0f]));
+		}
+		public void relocate(float x, float y, float w, float h)
+		{
+			this.params = tuple(x, y, w, h);
+			this.params_i = tuple(cast(int)x, cast(int)y, cast(int)w, cast(int)h);
+			this.uniformDataBuffer.update(UniformBufferData([2.0f / w, 2.0f / h, 1.0f, 1.0f]));
+		}
+		
+		public static @property current(Viewport vp)
+		{
+			glViewport(vp.params_i.expand);
+			glScissor(vp.params_i.expand);
+			GLDevice.BindingPoint[UniformBindingPoints.Viewport] = vp.uniformDataBuffer;
+		}
 	}
 }
-alias RenderHelper = RenderHelper_.instance;
