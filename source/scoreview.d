@@ -1,5 +1,5 @@
 import objectivegl;
-import shaderstock;
+import shaderstock, renderhelper;
 import std.range, std.algorithm, std.typecons;
 import bindingpoints;
 
@@ -60,6 +60,8 @@ final class ScoreView_
 	alias LineColor = HexColor!0x30ffffff;
 	
 	private UniformBuffer!UniformColorData cdLine;
+	private RenderHelper.Viewport vpEntire;
+	private float editorHeight = 0.0f;
 	
 	private VertexArray separator, background, barline;
 	private float laneWidths_;
@@ -90,23 +92,30 @@ final class ScoreView_
 	public void init()
 	{
 		auto vertices = makeVertices(8);
+		this.vpEntire = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
 		this.laneWidths_ = vertices[0].back.pos[0] - vertices[0].front.pos[0];
 		this.separator = VertexArray.fromSlice(vertices[0], ShaderStock.vertUnscaled);
 		this.background = VertexArray.fromSlice(vertices[1], ShaderStock.vertUnscaledColor);
 		this.barline = VertexArray.fromSlice([SimpleVertex([-1.0f, 0.0f]), SimpleVertex([1.0f, 0.0f])], ShaderStock.barLines);
 		this.cdLine = UniformBufferFactory.newStatic(UniformColorData([LineColor]));
 	}
-	
-	public void draw(int height)
+	public void onResize(float x, float y, float w, float h)
 	{
+		this.vpEntire.relocate(x, y, w, h);
+		this.editorHeight = h - TRACK_HDR_SIZE;
+	}
+	
+	public void draw()
+	{
+		RenderHelper.Viewport.current = this.vpEntire;
 		glClearColor(BackgroundColor); glClear(GL_COLOR_BUFFER_BIT);
 		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.cdLine;
 		ShaderStock.vertUnscaledColor.activate(); this.background.drawInstanced!GL_TRIANGLES(1);
 		ShaderStock.vertUnscaled.activate(); this.separator.drawInstanced!GL_LINES(1);
-		if(height > TRACK_HDR_SIZE)
+		if(this.editorHeight >= 1)
 		{
-			glViewport(16, 0, cast(int)this.laneWidths, height);
-			ShaderStock.barLines.activate(); this.drawBarlines(height - TRACK_HDR_SIZE);
+			glViewport(16, 0, cast(int)this.laneWidths, cast(int)this.vpEntire.parameters[3]);
+			ShaderStock.barLines.activate(); this.drawBarlines(cast(int)this.editorHeight);
 		}
 	}
 	

@@ -60,7 +60,6 @@ final class RightPane_
 	public void onResize(float x, float y, float w, float h)
 	{
 		this.vpPane.relocate(x, y, w, h);
-		// this.listbox.vport.relocate(x + 8.0f, y + 8.0f, w - 16.0f, h - 32.0f);
 		this.vpListBoxEntire.relocate(x + 8.0f, y + 8.0f, w - 16.0f, h - 32.0f);
 		this.vpListBoxInner.relocate(x + 9.0f, y + 9.0f, w - 18.0f, h - 34.0f);
 	}
