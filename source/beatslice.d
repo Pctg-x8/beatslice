@@ -29,6 +29,7 @@ final class Beatslice_
 	private Tuple!(int, int) size;
 	private GLFWcursor* cursorArrow, cursorHorzResize, cursorTextRange;
 	private PointingState pstate;
+	private float leftPaneWidth;
 	
 	private auto initFrame()
 	{
@@ -87,9 +88,9 @@ final class Beatslice_
 	}
 	private void onResizePane()
 	{
-		immutable sep = this.size[0] - RightPane.width;
-		ScoreView.onResize(0.0f, 0.0f, sep, this.size[1]);
-		RightPane.onResize(sep, 0.0f, RightPane.width, this.size[1]);
+		this.leftPaneWidth = this.size[0] - RightPane.width;
+		ScoreView.onResize(0.0f, 0.0f, this.leftPaneWidth, this.size[1]);
+		RightPane.onResize(this.leftPaneWidth, 0.0f, RightPane.width, this.size[1]);
 	}
 	// Render loop
 	private void onRender()
@@ -103,7 +104,7 @@ final class Beatslice_
 	{
 		void updateCursor()
 		{
-			immutable diff = x - (this.size[0] - RightPane.width);
+			immutable diff = x - this.leftPaneWidth;
 			if(abs(diff) <= 2.0f)
 			{
 				this.pWindow.glfwSetCursor(this.cursorHorzResize);
