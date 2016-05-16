@@ -75,6 +75,7 @@ final class Beatslice_
 		GLDevice.RasterizerState.ScissorTest = true;
 		GLDevice.RasterizerState.BackCulling = false;
 		GLDevice.RasterizerState.DepthTest = false;
+		GLDevice.RasterizerState.DepthClamp = false;
 		while(!glfwWindowShouldClose(this.pWindow)) glfwWaitEvents();
 	}
 	

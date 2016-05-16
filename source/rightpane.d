@@ -20,7 +20,7 @@ final class RightPane_
 	// Color constants
 	alias BackgroundColor = HexColor!0xff303030;
 	alias InputBorderColor = HexColor!0xff4080c0;
-	alias InputFillColor = HexColor!0x40000000;
+	alias InputFillColor = HexColor!0xff101010;
 	alias TextColor = HexColor!0xffffffff;
 	alias PlaceholderTextColor = HexColor!0x60ffffff;
 	
@@ -28,16 +28,9 @@ final class RightPane_
 	private VertexArray border_vertices, fill_vertices;
 	private UniformBuffer!InstanceTranslationArrayData instanceTranslationBuffer;
 	private InstanceTranslationArrayData inputBoxPositions;
-	private RenderHelper.Viewport vpPane;
+	private RenderHelper.Viewport vpPane, vpListBoxEntire, vpListBoxInner;
 	private UniformBuffer!UniformColorData cdText;
 	private StringVertices materialHeader;
-	private struct ListBoxData
-	{
-		UniformBuffer!UniformColorData borderColor, fillColor;
-		VertexArray borderVertices, fillVertices;
-		RenderHelper.Viewport vport;
-	}
-	private ListBoxData listbox;
 	
 	public void init()
 	{
@@ -56,18 +49,10 @@ final class RightPane_
 		this.instanceTranslationBuffer.update(this.inputBoxPositions);
 		
 		this.vpPane = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
-		this.listbox.vport = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
+		this.vpListBoxEntire = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
+		this.vpListBoxInner = new RenderHelper.Viewport(0.0f, 0.0f, 100.0f, 100.0f);
 		this.cdText = UniformBufferFactory.newStatic(UniformColorData([TextColor]));
 		this.materialHeader = StringVertices.make("Materials: ", 8, 4);
-		this.listbox.borderVertices = VertexArray.fromSlice([
-			SimpleVertex([-1.0f, -1.0f]), SimpleVertex([-1.0f, 1.0f]), SimpleVertex([1.0f, 1.0f]), SimpleVertex([1.0f, -1.0f]),
-			SimpleVertex([-1.0f, -1.0f])
-		], ShaderStock.rawVertices);
-		this.listbox.fillVertices = VertexArray.fromSlice([
-			SimpleVertex([-1.0f, -1.0f]), SimpleVertex([-1.0f, 1.0f]), SimpleVertex([1.0f, -1.0f]), SimpleVertex([1.0f, 1.0f])
-		], ShaderStock.rawVertices);
-		this.listbox.borderColor = UniformBufferFactory.newStatic(UniformColorData([InputBorderColor]));
-		this.listbox.fillColor = UniformBufferFactory.newStatic(UniformColorData([InputFillColor]));
 		
 		GLDevice.BindingPoint[UniformBindingPoints.InstanceTranslationArray] = this.instanceTranslationBuffer;
 	}
@@ -75,7 +60,9 @@ final class RightPane_
 	public void onResize(float x, float y, float w, float h)
 	{
 		this.vpPane.relocate(x, y, w, h);
-		this.listbox.vport.relocate(x + 8.0f, y + 8.0f, w - 16.0f, h - 32.0f);
+		// this.listbox.vport.relocate(x + 8.0f, y + 8.0f, w - 16.0f, h - 32.0f);
+		this.vpListBoxEntire.relocate(x + 8.0f, y + 8.0f, w - 16.0f, h - 32.0f);
+		this.vpListBoxInner.relocate(x + 9.0f, y + 9.0f, w - 18.0f, h - 34.0f);
 	}
 	
 	public void draw()
@@ -89,12 +76,10 @@ final class RightPane_
 		ShaderStock.charRender.uniforms.pixelOffset = [0.0f, 0.0f];
 		this.materialHeader.drawInstanced(1);
 		
-		RenderHelper.Viewport.current = this.listbox.vport;
-		ShaderStock.rawVertices.activate();
-		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.listbox.fillColor;
-		this.listbox.fillVertices.drawInstanced!GL_TRIANGLE_STRIP(1);
-		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.listbox.borderColor;
-		this.listbox.borderVertices.drawInstanced!GL_LINE_STRIP(1);
+		RenderHelper.Viewport.current = this.vpListBoxEntire;
+		glClearColor(InputBorderColor); glClear(GL_COLOR_BUFFER_BIT);
+		RenderHelper.Viewport.current = this.vpListBoxInner;
+		glClearColor(InputFillColor); glClear(GL_COLOR_BUFFER_BIT);
 	}
 	
 	public bool inCursorTextRange(double x, double y)
