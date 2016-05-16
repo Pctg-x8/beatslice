@@ -43,30 +43,34 @@ final static class ShaderStock
 	mixin(Readonly("inputBoxRender"));
 	mixin(Readonly("placeholderRender"));
 	mixin(Readonly("rawVertices"));
+	mixin(Readonly("pixelScaled"));
 	
 	public static void init()
 	{
-		this.vertUnscaled = ShaderProgram.fromSources!(SimpleVertex,
-			ShaderType.Vertex, import("vertUnscaled.glsl"),
-			ShaderType.Fragment, import("colorize.glsl"));
-		this.vertUnscaledColor = ShaderProgram.fromSources!(ColorVertex,
-			ShaderType.Vertex, import("vertUnscaledColor.glsl"),
-			ShaderType.Fragment, import("colorize.glsl"));
-		this.barLines = ShaderProgram.fromSources!(SimpleVertex,
-			ShaderType.Vertex, import("barLines.glsl"),
-			ShaderType.Fragment, import("colorize.glsl"));
-		this.charRender = ShaderProgram.fromSources!(TexturedVertex,
-			ShaderType.Vertex, import("textured.glsl"),
-			ShaderType.Fragment, import("graytexture_colorize.glsl"));
-		this.inputBoxRender = ShaderProgram.fromSources!(SimpleVertex,
-			ShaderType.Vertex, import("inputBoxVS.glsl"),
-			ShaderType.Fragment, import("colorize.glsl"));
-		this.placeholderRender = ShaderProgram.fromSources!(TexturedVertex,
-			ShaderType.Vertex, import("placeholderVS.glsl"),
-			ShaderType.Fragment, import("graytexture_colorize.glsl"));
-		this.rawVertices = ShaderProgram.fromSources!(SimpleVertex,
-			ShaderType.Vertex, import("rawVertices.glsl"),
-			ShaderType.Fragment, import("colorize.glsl"));
+		// Vertices
+		alias VertexShader = CompiledShader!Vertex;
+		auto vertUnscaledShaderV = VertexShader.fromImportedSource!"vertUnscaled.glsl";
+		auto vertUnscaledColorShaderV = VertexShader.fromImportedSource!"vertUnscaledColor.glsl";
+		auto barLinesShaderV = VertexShader.fromImportedSource!"barLines.glsl";
+		auto inputBoxShaderV = VertexShader.fromImportedSource!"inputBoxVS.glsl";
+		auto placeholderShaderV = VertexShader.fromImportedSource!"placeholderVS.glsl";
+		auto texturedShaderV = VertexShader.fromImportedSource!"textured.glsl";
+		auto rawVerticesShaderV = VertexShader.fromImportedSource!"rawVertices.glsl";
+		auto pixelScaledShaderV = VertexShader.fromImportedSource!"pixelScaled.glsl";
+		// Fragments
+		alias FragmentShader = CompiledShader!Fragment;
+		auto colorizeShaderF = FragmentShader.fromSource!(ShaderType.Fragment, import("colorize.glsl"));
+		auto graytextureColorizeShaderF = FragmentShader.fromSource!(ShaderType.Fragment, import("graytexture_colorize.glsl"));
+		
+		// Linked Shaders
+		this.vertUnscaled = ShaderProgram.fromShaders!(SimpleVertex, vertUnscaledShaderV, colorizeShaderF);
+		this.vertUnscaledColor = ShaderProgram.fromShaders!(ColorVertex, vertUnscaledColorShaderV, colorizeShaderF);
+		this.barLines = ShaderProgram.fromShaders!(SimpleVertex, barLinesShaderV, colorizeShaderF);
+		this.charRender = ShaderProgram.fromShaders!(TexturedVertex, texturedShaderV, graytextureColorizeShaderF);
+		this.inputBoxRender = ShaderProgram.fromShaders!(SimpleVertex, inputBoxShaderV, colorizeShaderF);
+		this.placeholderRender = ShaderProgram.fromShaders!(TexturedVertex, placeholderShaderV, graytextureColorizeShaderF);
+		this.rawVertices = ShaderProgram.fromShaders!(SimpleVertex, rawVerticesShaderV, colorizeShaderF);
+		this.pixelScaled = ShaderProgram.fromShaders!(SimpleVertex, pixelScaledShaderV, colorizeShaderF);
 		
 		// Block Binding
 		foreach(x; [this.vertUnscaled, this.barLines, this.charRender, this.inputBoxRender, this.placeholderRender])

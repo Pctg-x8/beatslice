@@ -31,17 +31,15 @@ final class RightPane_
 	private RenderHelper.Viewport vpPane, vpListBoxEntire, vpListBoxInner;
 	private UniformBuffer!UniformColorData cdText;
 	private StringVertices materialHeader;
+	private VertexArray[2] button_border_vertices;
 	
 	public void init()
 	{
 		this.width = 150;
-		this.border_vertices = VertexArray.fromSlice([
-			SimpleVertex([-1.0f, -1.0f]), SimpleVertex([-1.0f, 20.0f]),
-			SimpleVertex([1.0f, 20.0f]), SimpleVertex([1.0f, 0.0f]), SimpleVertex([-1.0f, 0.0f])
-		], ShaderStock.inputBoxRender);
-		this.fill_vertices = VertexArray.fromSlice([
-			SimpleVertex([-1.0f, 0.0f]), SimpleVertex([1.0f, 0.0f]), SimpleVertex([-1.0f, 20.0f]), SimpleVertex([1.0f, 20.0f])
-		], ShaderStock.inputBoxRender);
+		this.button_border_vertices[0] = VertexArray.fromSlice([
+			SimpleVertex([-8.0f, 8.0f]), SimpleVertex([-8.0f, 16.0f]), SimpleVertex([-32.0f, 16.0f]),
+			SimpleVertex([-32.0f, 8.0f]), SimpleVertex([-8.0f, 8.0f])
+		], ShaderStock.pixelScaled);
 		
 		this.instanceTranslationBuffer = UniformBuffer!InstanceTranslationArrayData.newStatic();
 		this.inputBoxPositions.offsets[0] = [0.0f, 40.0f, 0.0f, 0.0f];
@@ -74,6 +72,7 @@ final class RightPane_
 		GLDevice.BindingPoint[UniformBindingPoints.ColorData] = this.cdText;
 		ShaderStock.charRender.uniforms.pixelOffset = [0.0f, 0.0f];
 		this.materialHeader.drawInstanced(1);
+		ShaderStock.pixelScaled.activate();
 		
 		RenderHelper.Viewport.current = this.vpListBoxEntire;
 		glClearColor(InputBorderColor); glClear(GL_COLOR_BUFFER_BIT);
